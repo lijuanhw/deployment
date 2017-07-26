@@ -2,31 +2,31 @@ tosca_definitions_version: hwpaas_tosca_version_1_4_1
 
 inputs:
   image-frontend:
-    default: "100.125.1.34:20202/hwcse/sockshop-frontend:0.0.58"
+    default: "100.125.1.34:20202/hwcse/sockshop-frontend:0.0.63"
   image-orders:
-    default: "100.125.1.34:20202/hwcse/sockshop-orders:0.3.0"
+    default: "100.125.1.34:20202/hwcse/sockshop-orders:1.1.1"
   image-payment:
-    default: "100.125.1.34:20202/hwcse/sockshop-payment:0.1.0"
+    default: "100.125.1.34:20202/hwcse/sockshop-payment:0.4.0"
   image-user:
-    default: "100.125.1.34:20202/hwcse/sockshop-user:0.3.0"
+    default: "100.125.1.34:20202/hwcse/sockshop-user:1.1.2"
   image-carts:
-    default: "100.125.1.34:20202/hwcse/sockshop-carts:0.3.0"
+    default: "100.125.1.34:20202/hwcse/sockshop-carts:1.1.1"
   image-shipping:
-    default: "100.125.1.34:20202/hwcse/sockshop-shipping:0.3.0"
+    default: "100.125.1.34:20202/hwcse/sockshop-shipping:1.1.1"
   image-catalogue:
-    default: "100.125.1.34:20202/hwcse/sockshop-cat:0.4.0"
+    default: "100.125.1.34:20202/hwcse/sockshop-cat:1.1.1"
   image-rabbitmq:
     default: "100.125.1.34:20202/hwcse/rabbitmq:3.6.8-management"
   image-queuemaster:
-    default: "100.125.1.34:20202/hwcse/sockshop-queuemaster:0.3.0"
+    default: "100.125.1.34:20202/hwcse/sockshop-queuemaster:1.1.1"
   image-mongodb-orders:
     default: "100.125.1.34:20202/hwcse/mongo:1.0.0"
   image-mongodb-users:
-    default: "100.125.1.34:20202/hwcse/mongo:1.0.0"
+    default: "100.125.1.34:20202/hwcse/sockshop-users-db:1.1.1"
   image-mongodb-carts:
     default: "100.125.1.34:20202/hwcse/mongo:1.0.0"
   image-mysql:
-    default: "100.125.1.34:20202/hwcse/sockshop-mysql:1.0.0"
+    default: "100.125.1.34:20202/hwcse/sockshop-mysql:2.0.0"
   sc_host:
     default: "100.125.1.34"
   frontend_name:
@@ -74,7 +74,7 @@ node_templates:
   bptest-host:
     type: hwpaas.nodes.Cluster
     properties:
-      name: cse-nodelete
+      name: acmeair-tianming
       namespace: default
       instances: 1
   #frontend
@@ -345,6 +345,13 @@ node_templates:
             - port: 7092
               name: cartsport
               targetPort: 7092
+        resource_spec:
+          request:
+            cpu: 500m
+            memory: 512Mi
+          limit:
+            cpu: 1000m
+            memory: 1024Mi
         volumes:
           - name: localtime
             mountpath: /etc/localtime
@@ -450,8 +457,8 @@ node_templates:
       type: container
       name: { get_input: catalogue_name }
       custom_spec:
-        mysql_ip: { get_attribute: [mysql, Service, clusterIP] }
-        mysql_port: { get_attribute: [mysql, Service, ports, 0, port] }
+        mysql_ip: { get_attribute: [mysql-app, Service, clusterIP] }
+        mysql_port: { get_attribute: [mysql-app, Service, ports, 0, port] }
         mysql_user: catalogue_user
         mysql_db: socksdb
         mysql_password: default_password
@@ -572,11 +579,6 @@ node_templates:
     properties:
       package:
         package_type: container
-        env:
-          - name: "MONGO_INITDB_ROOT_USERNAME"
-            value: mongo-user
-          - name: "MONGO_INITDB_ROOT_PASSWORD"
-            value: mongo-password
         container_spec:
           image: { get_input: image-mongodb-users }
         service_spec:
